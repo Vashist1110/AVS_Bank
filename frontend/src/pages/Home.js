@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import './Home.css';
 
 // Import images from assets folder
 import savingsImg from '../assets/savings_shop.jpg';
@@ -100,7 +101,6 @@ const cardStyle = {
   flexDirection: 'column',
   justifyContent: 'space-between',
   width: '100%',
-  maxWidth: '340px',
 };
 
 const buttonStyle = (bg) => ({
@@ -117,127 +117,90 @@ const buttonStyle = (bg) => ({
 });
 
 function Home() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth >= 768) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
-    <div style={{ fontFamily: 'Roboto, Arial, sans-serif', background: '#f7f7f7', minHeight: '100vh' }}>
+    <div className="home-container">
       {/* Sticky Navbar */}
-      <nav style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 100,
-        background: '#fff',
-        color: '#222',
-        padding: '1rem 2rem',
-        boxShadow: '0 2px 8px #eee',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          {/* <img src="https://www.kotak.com/etc.clientlibs/kotak/clientlibs/clientlib-site/resources/images/logo.svg" alt="AVS Bank" style={{ height: 40, marginRight: 12 }} /> */}
-          <span style={{ fontWeight: 'bold', fontSize: '1.5rem', color: '#e31837', letterSpacing: '2px' }}>AVS Bank</span>
+      <nav className="navbar">
+        <div className="navbar-brand">
+          <span className="navbar-logo">AVS Bank</span>
         </div>
-        <div style={{ display: 'flex', gap: '2rem', fontWeight: '500', fontSize: '1rem' }}>
-          <span style={{ cursor: 'pointer' }}>Personal</span>
-          <span style={{ cursor: 'pointer' }}>Business</span>
-          <span style={{ cursor: 'pointer' }}>NRI</span>
-          <span style={{ cursor: 'pointer' }}>About Us</span>
-          <span style={{ cursor: 'pointer' }}>Learn</span>
-          <span style={{ cursor: 'pointer' }}>Help</span>
+        
+        {/* Hamburger Menu for Mobile */}
+        <button 
+          className="hamburger-menu"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          aria-label="Toggle menu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        {/* Navigation Links */}
+        <div className={`navbar-links ${isMobileMenuOpen ? 'active' : ''}`}>
+          <span>Personal</span>
+          <span>Business</span>
+          <span>NRI</span>
+          <span>About Us</span>
+          <span>Learn</span>
+          <span>Help</span>
         </div>
-        <div>
-          <button style={{
-            background: '#e31837',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '24px',
-            padding: '0.5rem 1.2rem',
-            fontWeight: 'bold',
-            fontSize: '1rem',
-            marginRight: '1rem',
-            cursor: 'pointer',
-          }}>
-            Login
-          </button>
-          <button style={{
-            background: '#005baa',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '24px',
-            padding: '0.5rem 1.2rem',
-            fontWeight: 'bold',
-            fontSize: '1rem',
-            cursor: 'pointer',
-          }}>
-            Register
-          </button>
+
+        {/* Auth Buttons */}
+        <div className={`navbar-buttons ${isMobileMenuOpen ? 'active' : ''}`}>
+          <button className="btn-login">Login</button>
+          <button className="btn-register">Register</button>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        background: 'linear-gradient(90deg, #fff 60%, #e31837 100%)',
-        padding: '3rem 2rem 2rem 2rem',
-        minHeight: '340px',
-        flexWrap: 'wrap'
-      }}>
-        <div style={{ maxWidth: 540 }}>
-          <h1 style={{ fontSize: '2.7rem', fontWeight: 'bold', color: '#e31837', marginBottom: '1rem' }}>
+      <section className="hero-section">
+        <div className="hero-content">
+          <h1 className="hero-title">
             Own your dream home, with best AVS Home Loans rate!
           </h1>
-          <p style={{ fontSize: '1.2rem', color: '#222', marginBottom: '2rem' }}>
+          <p className="hero-subtitle">
             Interest rate now starting at <b>7.99%* p.a.</b>
           </p>
-          <button style={{
-            background: '#e31837',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '0.8rem 2rem',
-            fontWeight: 'bold',
-            fontSize: '1.1rem',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-            cursor: 'pointer'
-          }}>
+          <button className="btn-apply">
             Apply Now
           </button>
         </div>
-        <div>
+        <div className="hero-image">
           <img
             src={familyHomeImg}
             alt="Family Home"
-            style={{
-              width: '400px',
-              borderRadius: '24px',
-              boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
-              objectFit: 'cover'
-            }}
           />
         </div>
       </section>
 
       {/* Products Cards Section */}
-      <section style={{ padding: '2rem 0', background: '#f7f7f7' }}>
-        <h2 style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '2rem', marginBottom: '2rem', color: '#222' }}>
+      <section className="products-section">
+        <h2 className="section-title">
           Explore Our Products
         </h2>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: '1.5rem',
-          padding: '1rem 2rem',
-          justifyItems: 'center'
-        }}>
+        <div className="products-grid">
           {products.map((product, idx) => (
             <div
               key={product.title}
               style={{
                 ...cardStyle,
                 borderTop: `6px solid ${product.color}`,
-                boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
-                transition: 'transform 0.2s, box-shadow 0.2s',
               }}
               className="product-card"
               onMouseEnter={e => {
@@ -252,20 +215,13 @@ function Home() {
               <img
                 src={product.img}
                 alt={product.title}
-                style={{
-                  width: '100%',
-                  height: '140px',
-                  objectFit: 'cover',
-                  borderRadius: '12px',
-                  marginBottom: '1rem',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.07)'
-                }}
+                className="product-image"
               />
-              <h3 style={{ color: product.color, fontWeight: 'bold', fontSize: '1.3rem', marginBottom: '0.7rem' }}>
+              <h3 style={{ color: product.color }} className="product-title">
                 {product.title}
               </h3>
-              <p style={{ color: '#444', marginBottom: '1.2rem', minHeight: '60px' }}>{product.description}</p>
-              <div>
+              <p className="product-description">{product.description}</p>
+              <div className="product-buttons">
                 <button style={buttonStyle(product.color)}>Know More</button>
                 <button style={buttonStyle('#222')}>Apply</button>
               </div>
@@ -275,51 +231,16 @@ function Home() {
       </section>
 
       {/* Need Help Section */}
-      <section style={{ background: '#f2f3f7', padding: '2rem 0 3rem 0' }}>
-        <h2 style={{
-          textAlign: 'center',
-          fontWeight: 'bold',
-          fontSize: '2rem',
-          marginBottom: '2rem',
-          color: '#005baa'
-        }}>
+      <section className="help-section">
+        <h2 className="section-title-help">
           Need Help?
         </h2>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '2rem',
-          flexWrap: 'wrap'
-        }}>
+        <div className="help-cards-container">
           {helpCards.map(card => (
-            <div key={card.title} style={{
-              background: '#fff',
-              borderRadius: '16px',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
-              padding: '1.2rem 2rem',
-              minWidth: '220px',
-              maxWidth: '240px',
-              margin: '0.5rem',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              transition: 'box-shadow 0.2s',
-            }}>
-              <div style={{
-                fontSize: '2rem',
-                marginBottom: '0.7rem'
-              }}>{card.icon}</div>
-              <div style={{
-                fontWeight: 'bold',
-                fontSize: '1.1rem',
-                marginBottom: '0.4rem',
-                textAlign: 'center'
-              }}>{card.title}</div>
-              <div style={{
-                color: '#555',
-                fontSize: '0.95rem',
-                textAlign: 'center'
-              }}>{card.description}</div>
+            <div key={card.title} className="help-card">
+              <div className="help-icon">{card.icon}</div>
+              <div className="help-title">{card.title}</div>
+              <div className="help-description">{card.description}</div>
             </div>
           ))}
         </div>
