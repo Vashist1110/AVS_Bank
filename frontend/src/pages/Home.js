@@ -164,7 +164,7 @@ function Home() {
         {/* Auth Buttons */}
         <div className={`navbar-buttons ${isMobileMenuOpen ? 'active' : ''}`}>
           <button className="btn-login">Login</button>
-          <button className="btn-register">Register</button>
+          <button className="btn-register">Create Account</button>
         </div>
       </nav>
 
@@ -245,6 +245,73 @@ function Home() {
           ))}
         </div>
       </section>
+
+      {/* Footer Section */}
+      <footer className="footer">
+        <div className="footer-content">
+          <div className="footer-section">
+            <h3 className="footer-logo">AVS Bank</h3>
+            <p className="footer-tagline">Banking made simple, secure, and accessible for everyone.</p>
+            <div className="social-links">
+              <a href="#" className="social-icon">📘</a>
+              <a href="#" className="social-icon">🐦</a>
+              <a href="#" className="social-icon">📷</a>
+              <a href="#" className="social-icon">💼</a>
+            </div>
+          </div>
+
+          <div className="footer-section">
+            <h4>Products</h4>
+            <ul>
+              <li><a href="#">Savings Account</a></li>
+              <li><a href="#">Current Account</a></li>
+              <li><a href="#">Credit Cards</a></li>
+              <li><a href="#">Personal Loans</a></li>
+              <li><a href="#">Home Loans</a></li>
+            </ul>
+          </div>
+
+          <div className="footer-section">
+            <h4>Services</h4>
+            <ul>
+              <li><a href="#">Online Banking</a></li>
+              <li><a href="#">Mobile Banking</a></li>
+              <li><a href="#">NRI Banking</a></li>
+              <li><a href="#">Business Banking</a></li>
+              <li><a href="#">Investment</a></li>
+            </ul>
+          </div>
+
+          <div className="footer-section">
+            <h4>Support</h4>
+            <ul>
+              <li><a href="#">Help Center</a></li>
+              <li><a href="#">Contact Us</a></li>
+              <li><a href="#">Find Branch</a></li>
+              <li><a href="#">Report Fraud</a></li>
+              <li><a href="#">FAQs</a></li>
+            </ul>
+          </div>
+
+          <div className="footer-section">
+            <h4>Company</h4>
+            <ul>
+              <li><a href="#">About Us</a></li>
+              <li><a href="#">Careers</a></li>
+              <li><a href="#">Press</a></li>
+              <li><a href="#">Legal</a></li>
+              <li><a href="#">Privacy Policy</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="footer-bottom">
+          <p>&copy; 2025 AVS Bank. All rights reserved.</p>
+          <p className="footer-disclaimer">
+            AVS Bank is licensed and regulated. Your deposits are insured up to applicable limits.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
