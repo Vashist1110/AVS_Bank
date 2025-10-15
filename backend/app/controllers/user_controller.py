@@ -1,6 +1,7 @@
 from flask import request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from app.model.models import User
+from app.model.transactionmodel import Transaction
 from app import db
 
 def register():
@@ -35,7 +36,8 @@ def register():
         pan=data['pan'],
         account_type=data['account_type'],
         initial_balance=data['initial_balance'],
-        type_of_account=data['type_of_account']
+        type_of_account=data['type_of_account'],
+        account_number=User.generate_account_number()
     )
     user.set_password(data['password'])
     db.session.add(user)
@@ -73,6 +75,7 @@ def get_profile():
         "gender": user.gender,
         "dob": user.dob,
         "adhaar": user.adhaar,
+        "account_number": user.account_number,
         "pan": user.pan,
         "account_type": user.account_type,
         "initial_balance": user.initial_balance,
@@ -92,6 +95,13 @@ def deposit():
     user_id = int(get_jwt_identity())
     user = User.query.get(user_id)
     user.initial_balance += amount
+    transaction = Transaction(
+        user_id=user.id,
+        amount=amount,
+        type='credit',
+        description='Deposit'
+    )
+    db.session.add(transaction)
     db.session.commit()
 
     return jsonify({"msg": f"Deposited ₹{amount} successfully", "new_balance": user.initial_balance}), 200
@@ -111,6 +121,13 @@ def withdraw():
         return jsonify({"msg": "Insufficient funds"}), 400
 
     user.initial_balance -= amount
+    transaction = Transaction(
+        user_id=user.id,
+        amount=amount,
+        type='debit',
+        description='Withdrawal'
+    )
+    db.session.add(transaction)
     db.session.commit()
 
     return jsonify({"msg": f"Withdrew ₹{amount} successfully", "new_balance": user.initial_balance}), 200
