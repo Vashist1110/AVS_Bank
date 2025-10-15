@@ -1,6 +1,5 @@
 from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
-import random
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -31,7 +30,15 @@ class User(db.Model):
 
     @staticmethod
     def generate_account_number():
-        while True:
-            number = f"AVS{random.randint(1000, 9999)}"
-            if not User.query.filter_by(account_number=number).first():
-                return number
+        last_user = User.query.order_by(User.account_number.desc()).first()
+        
+        if last_user and last_user.account_number:
+            try:
+                last_number = int(last_user.account_number.replace('AVS', ''))
+                next_number = last_number + 1
+            except (ValueError, AttributeError):
+                next_number = 1001
+        else:
+            next_number = 1001
+        
+        return f"AVS{next_number}"

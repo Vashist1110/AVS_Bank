@@ -49,7 +49,7 @@ function UserLogin() {
         
         // Save token (backend returns access_token)
         if (response.data.access_token) {
-          authHelpers.saveToken(response.data.access_token);
+          authHelpers.saveToken(response.data.access_token, 'user');
           alert('Login successful!');
           
           // Reset form
