@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { userAPI } from '../services/api';
 import './Create_Account.css';
 
 const accountTypes = [
@@ -29,12 +31,15 @@ function getPasswordStrength(password) {
 }
 
 function CreateAccount() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     fullName: '',
     contact: '',
     email: '',
     dob: '',
+    gender: '',
     aadhar: '',
     pan: '',
     accountType: '',
@@ -59,6 +64,8 @@ function CreateAccount() {
     else if (!/^[0-9]{10}$/.test(form.contact.trim())) newErrors.contact = 'Contact number must be 10 digits';
 
     if (!form.dob) newErrors.dob = 'Date of Birth is required';
+
+    if (!form.gender) newErrors.gender = 'Gender is required';
 
     if (!form.aadhar.trim()) newErrors.aadhar = 'Aadhar card is required';
     else if (!/^[0-9]{12}$/.test(form.aadhar.trim())) newErrors.aadhar = 'Aadhar number must be 12 digits';
@@ -86,25 +93,68 @@ function CreateAccount() {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
     setErrors(validationErrors);
+    
     if (Object.keys(validationErrors).length === 0) {
-      alert('Account created successfully!');
-      setForm({
-        fullName: '',
-        contact: '',
-        email: '',
-        dob: '',
-        aadhar: '',
-        pan: '',
-        accountType: '',
-        password: '',
-        confirmPassword: '',
-        captchaInput: ''
-      });
-      setCaptcha(generateCaptcha());
+      setLoading(true);
+      try {
+        // Prepare data for backend API with all required fields
+        const userData = {
+          name: form.fullName,
+          email: form.email || `user${form.contact}@avsbank.com`,
+          password: form.password,
+          confirm_password: form.confirmPassword,
+          phone: form.contact,
+          gender: form.gender,
+          dob: form.dob,
+          adhaar: form.aadhar,
+          pan: form.pan,
+          account_type: form.accountType,
+          initial_balance: 0,
+          type_of_account: form.accountType
+        };
+
+        const response = await userAPI.register(userData);
+        
+        alert('Account created successfully! Please login with your credentials.');
+        
+        // Reset form
+        setForm({
+          fullName: '',
+          contact: '',
+          email: '',
+          dob: '',
+          gender: '',
+          aadhar: '',
+          pan: '',
+          accountType: '',
+          password: '',
+          confirmPassword: '',
+          captchaInput: ''
+        });
+        setCaptcha(generateCaptcha());
+        
+        // Navigate to login page
+        setTimeout(() => {
+          navigate('/login');
+        }, 1500);
+        
+      } catch (error) {
+        console.error('Registration error:', error);
+        if (error.response) {
+          const errorMsg = error.response.data.msg || error.response.data.message || 'Please try again';
+          alert(`Registration failed: ${errorMsg}`);
+        } else if (error.request) {
+          alert('No response from server. Please check if the backend is running on port 5000.');
+        } else {
+          alert(`Registration failed: ${error.message}`);
+        }
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -149,6 +199,16 @@ function CreateAccount() {
           </div>
           <div className="account-row">
             <div className="account-field">
+              <label>Gender*</label>
+              <select name="gender" value={form.gender} onChange={handleChange}>
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+              {errors.gender && <span className="error">{errors.gender}</span>}
+            </div>
+            <div className="account-field">
               <label>Email</label>
               <input type="email" name="email" value={form.email} onChange={handleChange} placeholder="Email address" />
             </div>
@@ -157,13 +217,13 @@ function CreateAccount() {
               <input type="text" name="aadhar" value={form.aadhar} onChange={handleChange} placeholder="12-digit Aadhaar number" />
               {errors.aadhar && <span className="error">{errors.aadhar}</span>}
             </div>
+          </div>
+          <div className="account-row">
             <div className="account-field">
               <label>PAN Card*</label>
               <input type="text" name="pan" value={form.pan} onChange={handleChange} placeholder="Permanent Account Number (PAN)" />
               {errors.pan && <span className="error">{errors.pan}</span>}
             </div>
-          </div>
-          <div className="account-row">
             <div className="account-field">
               <label>Type of Account*</label>
               <select name="accountType" value={form.accountType} onChange={handleChange}>
@@ -226,7 +286,9 @@ function CreateAccount() {
               {errors.captchaInput && <span className="error">{errors.captchaInput}</span>}
             </div>
           </div>
-          <button type="submit" className="account-submit">Create Account</button>
+          <button type="submit" className="account-submit" disabled={loading}>
+            {loading ? 'Creating Account...' : 'Create Account'}
+          </button>
         </form>
       </div>
     </div>

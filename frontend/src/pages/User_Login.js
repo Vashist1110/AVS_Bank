@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { userAPI, authHelpers } from '../services/api';
 import './Create_Account.css';
 
 function UserLogin() {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     contact: '',
     password: '',
@@ -27,13 +31,54 @@ function UserLogin() {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
     setErrors(validationErrors);
+    
     if (Object.keys(validationErrors).length === 0) {
-      alert('Login successful!');
-      setForm({ contact: '', password: '', robot: false });
+      setLoading(true);
+      try {
+        // Prepare credentials for backend API
+        const credentials = {
+          phone: form.contact,
+          password: form.password
+        };
+
+        const response = await userAPI.login(credentials);
+        
+        // Save token (backend returns access_token)
+        if (response.data.access_token) {
+          authHelpers.saveToken(response.data.access_token);
+          alert('Login successful!');
+          
+          // Reset form
+          setForm({ contact: '', password: '', robot: false });
+          
+          // Navigate to user dashboard
+          setTimeout(() => {
+            navigate('/user-dashboard');
+          }, 1000);
+        } else {
+          alert('Login successful but no token received');
+        }
+        
+      } catch (error) {
+        console.error('Login error:', error);
+        if (error.response) {
+          if (error.response.status === 401) {
+            alert('Invalid phone number or password');
+          } else {
+            alert(`Login failed: ${error.response.data.msg || 'Please try again'}`);
+          }
+        } else if (error.request) {
+          alert('No response from server. Please check if the backend is running.');
+        } else {
+          alert('Login failed. Please try again.');
+        }
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -104,7 +149,9 @@ function UserLogin() {
               {errors.robot && <span className="error">{errors.robot}</span>}
             </div>
           </div>
-          <button type="submit" className="account-submit">Login</button>
+          <button type="submit" className="account-submit" disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
         </form>
       </div>
     </div>
