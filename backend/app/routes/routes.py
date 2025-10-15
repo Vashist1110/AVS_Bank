@@ -16,4 +16,6 @@ api_bp.route('/admin/users/<int:user_id>', methods=['PUT'])(admin_controller.upd
 api_bp.route('/admin/users/<int:user_id>', methods=['DELETE'])(admin_controller.delete_user)
 api_bp.route('/admin/dashboard', methods=['GET'])(admin_controller.dashboard)
 api_bp.route('/admin/create-user', methods=['POST'])(admin_controller.create_user)
+api_bp.route('/admin/users/<int:user_id>/transactions', methods=['GET'])(admin_controller.get_user_transactions)
+
 
