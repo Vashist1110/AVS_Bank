@@ -3,6 +3,7 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 from app.model.models import User
 from app import db
 from app.utils.decorators import role_required
+from app.model.transactionmodel import Transaction
 from app.model.adminmodel import Admin
 
 
@@ -130,6 +131,7 @@ def create_user():
         account_type=data['account_type'],
         initial_balance=data['initial_balance'],
         type_of_account=data['type_of_account'],
+        account_number=User.generate_account_number(),
         role='user'
     )
     user.set_password(data['password'])
@@ -160,3 +162,23 @@ def list_users():
         } for u in users
     ]), 200
 
+
+
+@jwt_required()
+@role_required('admin')
+def get_user_transactions(user_id):
+    user = User.query.get(user_id)
+    if not user or user.role != 'user':
+        return jsonify({"msg": "User not found"}), 404
+
+    transactions = user.transactions.order_by(Transaction.timestamp.desc()).limit(10).all()
+
+    return jsonify([
+        {
+            "id": txn.id,
+            "amount": txn.amount,
+            "type": txn.type,
+            "description": txn.description,
+            "timestamp": txn.timestamp.strftime("%Y-%m-%d %H:%M:%S")
+        } for txn in transactions
+    ]), 200
