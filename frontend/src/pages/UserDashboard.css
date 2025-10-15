@@ -153,7 +153,12 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-.details-kyc:hover {
+.details-kyc:disabled,
+.details-kyc[disabled] {
+  background: #009e60;
+  cursor: not-allowed;
+}
+.details-kyc:hover:enabled {
   background: #003d7a;
 }
 
