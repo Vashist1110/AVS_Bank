@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Home.css';
+import { useNavigate } from 'react-router-dom';
 
 // Import images from assets folder
 import savingsImg from '../assets/savings_shop.jpg';
@@ -119,7 +120,7 @@ const buttonStyle = (bg) => ({
 function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
+  const navigate = useNavigate();
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -164,7 +165,9 @@ function Home() {
         {/* Auth Buttons */}
         <div className={`navbar-buttons ${isMobileMenuOpen ? 'active' : ''}`}>
           <button className="btn-login">Login</button>
-          <button className="btn-register">Create Account</button>
+          <button className="btn-register"
+          onClick={() => navigate('/create_account')}
+          >Create Account</button>
         </div>
       </nav>
 
