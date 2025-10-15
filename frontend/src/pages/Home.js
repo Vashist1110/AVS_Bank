@@ -164,7 +164,9 @@ function Home() {
 
         {/* Auth Buttons */}
         <div className={`navbar-buttons ${isMobileMenuOpen ? 'active' : ''}`}>
-          <button className="btn-login">Login</button>
+          <button className="btn-login"
+          onClick={() => navigate('/login')}
+          >Login</button>
           <button className="btn-register"
           onClick={() => navigate('/create_account')}
           >Create Account</button>
