@@ -1,0 +1,213 @@
+.kyc-bg {
+  background: linear-gradient(120deg, #f7f7f7 60%, #e31837 100%);
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+
+.kyc-card {
+  max-width: 700px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 6px 32px rgba(0,0,0,0.10);
+  padding: 2.5rem 2rem;
+  font-family: 'Roboto', Arial, sans-serif;
+}
+
+.kyc-title {
+  text-align: center;
+  color: #e31837;
+  font-size: 2.2rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+  letter-spacing: 1px;
+}
+
+.kyc-documents-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.kyc-documents-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #222;
+}
+
+.kyc-documents-user {
+  font-size: 1rem;
+  color: #005baa;
+}
+
+.kyc-documents-list {
+  background: #f7f7f7;
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.kyc-doc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.kyc-doc-row:last-child {
+  border-bottom: none;
+}
+
+.kyc-doc-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.kyc-doc-label {
+  font-weight: bold;
+  color: #34495e;
+  font-size: 1.08rem;
+}
+
+.kyc-status {
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 0.2rem 0.8rem;
+  border-radius: 12px;
+  margin-top: 0.2rem;
+  display: inline-block;
+  width: fit-content;
+}
+
+.kyc-status.pending {
+  background: #fff0f0;
+  color: #e31837;
+  border: 1px solid #e31837;
+}
+
+.kyc-status.uploaded {
+  background: #e6fff2;
+  color: #009e60;
+  border: 1px solid #009e60;
+}
+
+.kyc-doc-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.3rem;
+}
+
+.kyc-doc-upload input[type="file"] {
+  font-size: 1rem;
+  padding: 0.3rem;
+}
+
+.kyc-file-name {
+  color: #34495e;
+  font-size: 0.98rem;
+  margin-top: 0.2rem;
+}
+
+.improved-kyc-declaration {
+  background: #f7f7f7;
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  margin-top: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.kyc-declaration-title {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #222;
+  margin-bottom: 1rem;
+}
+
+.kyc-declaration-text {
+  color: #34495e;
+  font-size: 1.08rem;
+  margin-bottom: 1.5rem;
+}
+
+.kyc-applicant {
+  margin-bottom: 1.2rem;
+}
+
+.kyc-name-fields {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.kyc-name-fields input {
+  flex: 1;
+  padding: 0.7rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1.05rem;
+  background: #fff;
+}
+
+.kyc-submit-btn {
+  background: #009e60;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.8rem 2rem;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background 0.2s;
+}
+
+.kyc-submit-btn:hover {
+  background: #007a48;
+}
+
+.kyc-success {
+  margin-top: 1rem;
+  color: #009e60;
+  font-weight: bold;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.kyc-error {
+  margin-top: 1rem;
+  color: #e31837;
+  font-weight: bold;
+  text-align: center;
+  font-size: 1.05rem;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .kyc-card {
+    padding: 1.2rem 0.5rem;
+  }
+  .kyc-documents-list,
+  .improved-kyc-declaration {
+    padding: 1rem 0.5rem;
+  }
+  .kyc-doc-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7rem;
+  }
+}
+
+/* Add to /workspaces/AVS_Bank/frontend/src/pages/KYC.css */
+.kyc-file-constraints {
+  color: #888;
+  font-size: 0.80rem;
+  margin-top: 0.2rem;
+  margin-bottom: 0.2rem;
+  margin-left: 0.55rem; /* Remove any left margin */
+  align-self: flex-start; /* Ensure left alignment */
+}

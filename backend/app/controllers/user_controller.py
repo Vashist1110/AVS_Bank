@@ -6,7 +6,8 @@ from app.model.update_request_model import UserUpdateRequest
 from app.model.kyc_request_model import KYCUpdateRequest
 import os
 from werkzeug.utils import secure_filename
-from flask import current_appfrom app import db
+from flask import current_app
+from app import db
 
 def register():
     data = request.get_json()

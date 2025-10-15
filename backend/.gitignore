@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -134,3 +135,20 @@ dmypy.json
 *.db
 *.sqlite
 *.sqlite3
+=======
+# Python cache
+__pycache__/
+*.pyc
+
+# IDE files
+.idea/
+
+# Database files
+*.db
+
+# System files
+.DS_Store
+
+# Ignore all .gitignore files except the root one
+!.gitignore
+>>>>>>> f22cb43dfb3b2a5867a5374857b8da69b6457594

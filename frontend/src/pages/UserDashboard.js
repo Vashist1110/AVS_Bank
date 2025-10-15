@@ -12,6 +12,7 @@ function UserDashboard() {
   const [action, setAction] = useState('deposit');
   const [transferAcc, setTransferAcc] = useState('');
   const [message, setMessage] = useState('');
+  const [kycCompleted, setKycCompleted] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -19,6 +20,7 @@ function UserDashboard() {
         const response = await userAPI.getProfile();
         setUserDetails(response.data);
         setBalance(response.data.initial_balance || 0);
+        setKycCompleted(response.data.kyc_status === 'completed');
         setLoading(false);
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -89,7 +91,7 @@ function UserDashboard() {
 
   if (loading) {
     return (
-      <div className="dashboard-container">
+      <div className="dashboard-bg">
         <nav className="dashboard-navbar">
           <span className="dashboard-logo">AVS Bank</span>
           <span className="dashboard-title">User Dashboard</span>
@@ -101,7 +103,7 @@ function UserDashboard() {
 
   if (!userDetails) {
     return (
-      <div className="dashboard-container">
+      <div className="dashboard-bg">
         <nav className="dashboard-navbar">
           <span className="dashboard-logo">AVS Bank</span>
           <span className="dashboard-title">User Dashboard</span>
@@ -112,30 +114,65 @@ function UserDashboard() {
   }
 
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-bg">
       <nav className="dashboard-navbar">
         <span className="dashboard-logo">AVS Bank</span>
         <span className="dashboard-title">User Dashboard</span>
         <button className="dashboard-logout" onClick={handleLogout}>Logout</button>
       </nav>
 
-      <section className="dashboard-main">
-        <div className="dashboard-details">
-          <h2 className="details-heading">Account Details</h2>
-          <div><b>Name:</b> {userDetails.name}</div>
-          <div><b>Phone:</b> {userDetails.phone}</div>
-          <div><b>Account No:</b> {userDetails.account_number || 'N/A'}</div>
-          <div><b>Type:</b> {userDetails.account_type}</div>
-          <div><b>DOB:</b> {userDetails.dob}</div>
-          <div><b>Aadhar:</b> {userDetails.adhaar}</div>
-          <div><b>PAN:</b> {userDetails.pan}</div>
-          <div className="details-balance"><b>Balance:</b> ₹{balance}</div>
-          <button className="details-kyc">Update KYC</button>
+      <section className="dashboard-main improved-dashboard-main">
+        {/* User Details Card */}
+        <div className="improved-details-card">
+          <div className="details-header">
+            <div className="details-avatar">
+              <span className="avatar-icon">👤</span>
+            </div>
+            <div>
+              <h2 className="details-heading">{userDetails.name}</h2>
+              <span className="details-type">{userDetails.account_type} Account</span>
+            </div>
+          </div>
+          <div className="details-list">
+            <div>
+              <span className="details-label">Account No:</span>
+              <span className="details-value">{userDetails.account_number || 'N/A'}</span>
+            </div>
+            <div>
+              <span className="details-label">Phone:</span>
+              <span className="details-value">{userDetails.phone}</span>
+            </div>
+            <div>
+              <span className="details-label">DOB:</span>
+              <span className="details-value">{userDetails.dob}</span>
+            </div>
+            <div>
+              <span className="details-label">Aadhar:</span>
+              <span className="details-value">{userDetails.adhaar}</span>
+            </div>
+            <div>
+              <span className="details-label">PAN:</span>
+              <span className="details-value">{userDetails.pan}</span>
+            </div>
+          </div>
+          <div className="details-balance-card">
+            <span className="balance-label">Current Balance</span>
+            <span className="balance-value">₹{balance.toLocaleString()}</span>
+          </div>
+          <button
+            className="details-kyc"
+            disabled={kycCompleted}
+            style={kycCompleted ? { background: '#009e60', cursor: 'not-allowed' } : {}}
+            onClick={() => !kycCompleted && navigate('/kyc')}
+          >
+            {kycCompleted ? 'KYC Completed' : 'Update KYC'}
+          </button>
         </div>
 
-        <div className="dashboard-actions">
+        {/* Transaction Section */}
+        <div className="improved-actions-card">
           <h3 className="actions-heading">Money Operations</h3>
-          <form onSubmit={handleTransaction}>
+          <form onSubmit={handleTransaction} className="actions-form">
             <div className="actions-row">
               <label>Action:</label>
               <select value={action} onChange={e => setAction(e.target.value)}>
@@ -152,6 +189,7 @@ function UserDashboard() {
                 value={amount}
                 onChange={e => setAmount(e.target.value)}
                 required
+                placeholder="Enter amount"
               />
             </div>
             {action === 'transfer' && (
@@ -162,14 +200,18 @@ function UserDashboard() {
                   value={transferAcc}
                   onChange={e => setTransferAcc(e.target.value)}
                   required
+                  placeholder="Recipient Account Number"
                 />
               </div>
             )}
             <button type="submit" className="actions-submit">
-              Submit
+              {action.charAt(0).toUpperCase() + action.slice(1)}
             </button>
           </form>
           {message && <div className="actions-message">{message}</div>}
+          <div className="actions-tips">
+            <span>💡 Tip: Always double-check account numbers before transferring funds.</span>
+          </div>
         </div>
       </section>
     </div>
