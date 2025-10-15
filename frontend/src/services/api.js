@@ -45,6 +45,9 @@ export const userAPI = {
   // Withdraw money
   withdraw: (amount) => api.post('/withdraw', { amount }),
   
+  // Transfer money
+  transfer: (amount, recipient_account) => api.post('/transfer', { amount, recipient_account }),
+  
   // Submit KYC documents
   submitKYC: (formData) => {
     return api.post('/request-kyc-update', formData, {

@@ -207,6 +207,67 @@ def withdraw():
     return jsonify({"msg": f"Withdrew ₹{amount} successfully", "new_balance": user.initial_balance}), 200
 
 
+@jwt_required()
+def transfer():
+    data = request.get_json()
+    amount = data.get('amount')
+    recipient_account = data.get('recipient_account')
+
+    # Validation
+    if not amount or amount <= 0:
+        return jsonify({"msg": "Invalid transfer amount"}), 400
+    
+    if not recipient_account:
+        return jsonify({"msg": "Recipient account number is required"}), 400
+
+    # Get sender
+    sender_account_number = get_jwt_identity()
+    sender = User.query.filter_by(account_number=sender_account_number).first()
+
+    # Check if sender has sufficient balance
+    if sender.initial_balance < amount:
+        return jsonify({"msg": "Insufficient funds"}), 400
+
+    # Find recipient
+    recipient = User.query.filter_by(account_number=recipient_account).first()
+    
+    if not recipient:
+        return jsonify({"msg": "Recipient account not found"}), 404
+    
+    # Prevent self-transfer
+    if sender.account_number == recipient.account_number:
+        return jsonify({"msg": "Cannot transfer to your own account"}), 400
+
+    # Perform transfer
+    sender.initial_balance -= amount
+    recipient.initial_balance += amount
+
+    # Record sender transaction (debit)
+    sender_transaction = Transaction(
+        user_id=sender.id,
+        amount=amount,
+        type='debit',
+        description=f'Transfer to {recipient.account_number}'
+    )
+    
+    # Record recipient transaction (credit)
+    recipient_transaction = Transaction(
+        user_id=recipient.id,
+        amount=amount,
+        type='credit',
+        description=f'Transfer from {sender.account_number}'
+    )
+
+    db.session.add(sender_transaction)
+    db.session.add(recipient_transaction)
+    db.session.commit()
+
+    return jsonify({
+        "msg": f"Transferred ₹{amount} to account {recipient_account} successfully",
+        "new_balance": sender.initial_balance
+    }), 200
+
+
 
 @jwt_required()
 def request_update():
