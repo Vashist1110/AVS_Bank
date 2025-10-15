@@ -45,6 +45,14 @@ function AdminDashboard() {
           console.warn('Failed to fetch KYC requests', e);
         }
 
+        // Fetch pending profile update requests
+        try {
+          const updateResp = await adminAPI.listUpdateRequests();
+          setPendingUpdates(updateResp.data || []);
+        } catch (e) {
+          console.warn('Failed to fetch update requests', e);
+        }
+
         setLoading(false);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -82,9 +90,11 @@ function AdminDashboard() {
 
   const handleApproveUpdate = async (updateId) => {
     try {
-      // Note: Backend needs update request endpoint
-      setPendingUpdates(pendingUpdates.filter(u => u.id !== updateId));
-      setMessage('Update approved successfully');
+      const resp = await adminAPI.processUpdateRequest(updateId, 'approve');
+      setMessage(resp.data.msg || 'Update approved successfully');
+      
+      // Remove the processed request from the list
+      setPendingUpdates(prev => prev.filter(u => u.id !== updateId));
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Approve update error:', error);
@@ -94,9 +104,11 @@ function AdminDashboard() {
 
   const handleRejectUpdate = async (updateId) => {
     try {
-      // Note: Backend needs update request endpoint
-      setPendingUpdates(pendingUpdates.filter(u => u.id !== updateId));
-      setMessage('Update rejected successfully');
+      const resp = await adminAPI.processUpdateRequest(updateId, 'reject');
+      setMessage(resp.data.msg || 'Update rejected successfully');
+      
+      // Remove the processed request from the list
+      setPendingUpdates(prev => prev.filter(u => u.id !== updateId));
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Reject update error:', error);
@@ -203,25 +215,23 @@ function AdminDashboard() {
                 <tr>
                   <th>User</th>
                   <th>Account No</th>
-                  <th>Requested Changes</th>
+                  <th>Field</th>
+                  <th>Old Value</th>
+                  <th>New Value</th>
                   <th>Timestamp</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {pendingUpdates.map(update => {
-                  const user = users.find(u => u.id === update.userId);
+                  const user = users.find(u => u.id === update.user_id) || {};
                   return (
                     <tr key={update.id}>
-                      <td>{user?.name}</td>
-                      <td>{user?.account_number || 'N/A'}</td>
-                      <td>
-                        {Object.entries(update.requested).map(([key, val]) => (
-                          <div key={key}>
-                            <strong>{key}:</strong> {user?.[key]} → <span style={{ color: 'green' }}>{val}</span>
-                          </div>
-                        ))}
-                      </td>
+                      <td>{user.name || 'Unknown'}</td>
+                      <td>{user.account_number || 'N/A'}</td>
+                      <td style={{ textTransform: 'capitalize' }}>{update.field}</td>
+                      <td>{update.old_value || '-'}</td>
+                      <td style={{ color: 'green', fontWeight: 'bold' }}>{update.new_value}</td>
                       <td>{update.timestamp}</td>
                       <td>
                         <button onClick={() => handleApproveUpdate(update.id)}>Approve</button>

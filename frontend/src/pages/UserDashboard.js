@@ -14,6 +14,8 @@ function UserDashboard() {
   const [transferAcc, setTransferAcc] = useState('');
   const [message, setMessage] = useState('');
   const [kycCompleted, setKycCompleted] = useState(false);
+  const [hasPendingUpdate, setHasPendingUpdate] = useState(false);
+  const [kycStatus, setKycStatus] = useState('not_submitted'); // not_submitted, pending, approved, rejected
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -21,7 +23,13 @@ function UserDashboard() {
         const response = await userAPI.getProfile();
         setUserDetails(response.data);
         setBalance(response.data.initial_balance || 0);
-        setKycCompleted(response.data.kyc_status === 'completed');
+        
+        // Set KYC status
+        const status = response.data.kyc_status || 'not_submitted';
+        setKycStatus(status);
+        setKycCompleted(status === 'approved');
+        
+        setHasPendingUpdate(response.data.has_pending_update_request || false);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -174,14 +182,68 @@ function UserDashboard() {
             <span className="balance-label">Current Balance</span>
             <span className="balance-value">₹{balance.toLocaleString()}</span>
           </div>
-          <button
-            className="details-kyc"
-            disabled={kycCompleted}
-            style={kycCompleted ? { background: '#009e60', cursor: 'not-allowed' } : {}}
-            onClick={() => !kycCompleted && navigate('/kyc')}
-          >
-            {kycCompleted ? 'KYC Completed' : 'Update KYC'}
-          </button>
+          
+          {/* Buttons Container - Side by Side */}
+          <div className="details-buttons-container">
+            {/* KYC Button with dynamic status */}
+            <button
+              className="details-kyc"
+              disabled={kycStatus === 'approved' || kycStatus === 'pending'}
+              style={
+                kycStatus === 'approved' 
+                  ? { background: '#009e60', cursor: 'not-allowed' }
+                  : kycStatus === 'pending'
+                  ? { background: '#ff9800', cursor: 'not-allowed' }
+                  : {}
+              }
+              onClick={() => {
+                if (kycStatus === 'not_submitted' || kycStatus === 'rejected') {
+                  navigate('/kyc');
+                }
+              }}
+            >
+              {kycStatus === 'approved' 
+                ? 'KYC Completed' 
+                : kycStatus === 'pending'
+                ? 'KYC Pending'
+                : kycStatus === 'rejected'
+                ? 'Update KYC'
+                : 'Complete KYC'
+              }
+            </button>
+            
+            <button
+              className="details-kyc"
+              disabled={hasPendingUpdate}
+              style={
+                hasPendingUpdate 
+                  ? { background: '#999', cursor: 'not-allowed' }
+                  : { background: '#1976d2' }
+              }
+              onClick={() => !hasPendingUpdate && navigate('/update-profile')}
+              title={hasPendingUpdate ? 'You have a pending update request' : 'Submit a profile update request'}
+            >
+              {hasPendingUpdate ? 'Update Pending' : 'Update Profile'}
+            </button>
+          </div>
+          
+          {/* Status message below buttons */}
+          <div style={{ 
+            fontSize: '12px', 
+            color: kycStatus === 'pending' ? '#ff9800' : kycStatus === 'approved' ? '#009e60' : '#666',
+            marginTop: '8px',
+            textAlign: 'center',
+            width: '100%'
+          }}>
+            {kycStatus === 'approved' 
+              ? 'Your KYC is completed' 
+              : kycStatus === 'pending'
+              ? 'Your KYC is pending admin approval'
+              : kycStatus === 'rejected'
+              ? 'Your KYC was rejected. Please resubmit.'
+              : 'Please complete your KYC'
+            }
+          </div>
         </div>
 
         {/* Transaction Section */}

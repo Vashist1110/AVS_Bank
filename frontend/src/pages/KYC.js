@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './KYC.css';
 import { useNavigate } from 'react-router-dom';
 import { userAPI, authHelpers } from '../services/api';
@@ -15,7 +15,39 @@ function KYC() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [kycStatus, setKycStatus] = useState('not_submitted');
   const navigate = useNavigate();
+
+  // Check KYC status on mount
+  useEffect(() => {
+    const checkKycStatus = async () => {
+      try {
+        const response = await userAPI.getProfile();
+        const status = response.data.kyc_status || 'not_submitted';
+        setKycStatus(status);
+        
+        if (status === 'pending') {
+          setError('You already have a pending KYC request. Please wait for admin review.');
+          setTimeout(() => {
+            navigate('/user-dashboard');
+          }, 3000);
+        } else if (status === 'approved') {
+          setError('Your KYC has already been approved. No further updates needed.');
+          setTimeout(() => {
+            navigate('/user-dashboard');
+          }, 3000);
+        }
+      } catch (error) {
+        console.error('Error checking KYC status:', error);
+        if (error.response?.status === 401) {
+          authHelpers.removeToken();
+          navigate('/login');
+        }
+      }
+    };
+
+    checkKycStatus();
+  }, [navigate]);
 
   // File validation
   const validateFile = (file) => {

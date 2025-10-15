@@ -72,6 +72,24 @@ def get_profile():
     if not user:
         return jsonify({"msg": "User not found"}), 404
 
+    has_pending_update = UserUpdateRequest.query.filter_by(
+        user_id=user.id,
+        status='pending'
+    ).first() is not None
+
+    kyc_request = KYCUpdateRequest.query.filter_by(user_id=user.id).order_by(
+        KYCUpdateRequest.timestamp.desc()
+    ).first()
+    
+    kyc_status = 'not_submitted'  # Default status
+    if kyc_request:
+        if kyc_request.status == 'pending':
+            kyc_status = 'pending'
+        elif kyc_request.status == 'approved':
+            kyc_status = 'approved'
+        elif kyc_request.status == 'rejected':
+            kyc_status = 'rejected'
+
     return jsonify({
         "id": user.id,
         "name": user.name,
@@ -85,7 +103,9 @@ def get_profile():
         "account_type": user.account_type,
         "initial_balance": user.initial_balance,
         "type_of_account": user.type_of_account,
-        "role": user.role
+        "role": user.role,
+        "has_pending_update_request": has_pending_update,
+        "kyc_status": kyc_status
     }), 200
 
 
@@ -93,6 +113,20 @@ def get_profile():
 def request_kyc_update():
     account_number = get_jwt_identity()
     user = User.query.filter_by(account_number=account_number).first()
+
+    existing_kyc = KYCUpdateRequest.query.filter_by(user_id=user.id).filter(
+        KYCUpdateRequest.status.in_(['pending', 'approved'])
+    ).first()
+    
+    if existing_kyc:
+        if existing_kyc.status == 'pending':
+            return jsonify({
+                "msg": "You already have a pending KYC request. Please wait for admin review."
+            }), 400
+        elif existing_kyc.status == 'approved':
+            return jsonify({
+                "msg": "Your KYC has already been approved. No further updates needed."
+            }), 400
 
     pancard = request.files.get('pancard')
     photo = request.files.get('photo')
@@ -178,6 +212,17 @@ def withdraw():
 def request_update():
     account_number = get_jwt_identity()
     user = User.query.filter_by(account_number=account_number).first()
+    
+    pending_requests = UserUpdateRequest.query.filter_by(
+        user_id=user.id, 
+        status='pending'
+    ).first()
+    
+    if pending_requests:
+        return jsonify({
+            "msg": "You already have a pending update request. Please wait for admin approval or rejection."
+        }), 400
+    
     data = request.get_json()
 
     allowed_fields = ['name', 'email', 'phone', 'gender', 'dob']
