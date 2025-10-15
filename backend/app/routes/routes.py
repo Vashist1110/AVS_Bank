@@ -8,6 +8,7 @@ api_bp.route('/login', methods=['POST'])(user_controller.login)  # login via pho
 api_bp.route('/profile', methods=['GET'])(user_controller.get_profile)
 api_bp.route('/deposit', methods=['POST'])(user_controller.deposit)
 api_bp.route('/withdraw', methods=['POST'])(user_controller.withdraw)
+api_bp.route('/transfer', methods=['POST'])(user_controller.transfer)
 api_bp.route('/request-update', methods=['POST'])(user_controller.request_update)
 api_bp.route('/request-kyc-update', methods=['POST'])(user_controller.request_kyc_update)
 

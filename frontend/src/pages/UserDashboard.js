@@ -94,10 +94,10 @@ function UserDashboard() {
           setTransactionLoading(false);
           return;
         }
-        // Note: transfer endpoint needs to be implemented in backend
-        setMessage('Transfer feature coming soon.');
-        setTransactionLoading(false);
-        return;
+        // Call transfer API
+        const response = await userAPI.transfer(amt, transferAcc);
+        setBalance(response.data.new_balance);
+        setMessage(response.data.msg || `Transferred ₹${amt} to ${transferAcc} successfully.`);
       }
       setAmount('');
       setTransferAcc('');
