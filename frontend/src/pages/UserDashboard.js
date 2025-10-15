@@ -7,6 +7,7 @@ function UserDashboard() {
   const navigate = useNavigate();
   const [userDetails, setUserDetails] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [transactionLoading, setTransactionLoading] = useState(false);
   const [balance, setBalance] = useState(0);
   const [amount, setAmount] = useState('');
   const [action, setAction] = useState('deposit');
@@ -50,34 +51,46 @@ function UserDashboard() {
       return;
     }
 
+    setMessage(''); // Clear previous messages
+    setTransactionLoading(true);
+
     try {
       if (action === 'deposit') {
         const response = await userAPI.deposit(amt);
-        setBalance(response.data.balance);
-        setMessage(`Deposited ₹${amt} successfully.`);
+        // Backend returns new_balance
+        setBalance(response.data.new_balance);
+        setMessage(response.data.msg || `Deposited ₹${amt} successfully.`);
       } else if (action === 'withdraw') {
         if (amt > balance) {
           setMessage('Insufficient balance.');
+          setTransactionLoading(false);
           return;
         }
         const response = await userAPI.withdraw(amt);
-        setBalance(response.data.balance);
-        setMessage(`Withdrew ₹${amt} successfully.`);
+        // Backend returns new_balance
+        setBalance(response.data.new_balance);
+        setMessage(response.data.msg || `Withdrew ₹${amt} successfully.`);
       } else if (action === 'transfer') {
         if (!transferAcc) {
           setMessage('Enter recipient account number.');
+          setTransactionLoading(false);
           return;
         }
         if (amt > balance) {
           setMessage('Insufficient balance.');
+          setTransactionLoading(false);
           return;
         }
         // Note: transfer endpoint needs to be implemented in backend
         setMessage('Transfer feature coming soon.');
+        setTransactionLoading(false);
         return;
       }
       setAmount('');
       setTransferAcc('');
+      
+      // Clear message after 5 seconds
+      setTimeout(() => setMessage(''), 5000);
     } catch (error) {
       console.error('Transaction error:', error);
       if (error.response?.status === 401) {
@@ -86,6 +99,8 @@ function UserDashboard() {
       } else {
         setMessage(error.response?.data?.msg || 'Transaction failed. Please try again.');
       }
+    } finally {
+      setTransactionLoading(false);
     }
   };
 
@@ -204,8 +219,10 @@ function UserDashboard() {
                 />
               </div>
             )}
-            <button type="submit" className="actions-submit">
-              {action.charAt(0).toUpperCase() + action.slice(1)}
+            <button type="submit" className="actions-submit" disabled={transactionLoading}>
+              {transactionLoading 
+                ? 'Processing...' 
+                : action.charAt(0).toUpperCase() + action.slice(1)}
             </button>
           </form>
           {message && <div className="actions-message">{message}</div>}

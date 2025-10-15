@@ -31,6 +31,7 @@ def list_kyc_requests():
         {
             "id": r.id,
             "user_id": r.user_id,
+            "account_number": r.user.account_number if r.user else None,
             "pancard_image": r.pancard_image,
             "photo_image": r.photo_image,
             "signature_image": r.signature_image,
@@ -125,8 +126,8 @@ def dashboard():
     total_balance = db.session.query(db.func.sum(User.initial_balance)).scalar() or 0.0
     male_users = User.query.filter_by(gender='Male', role='user').count()
     female_users = User.query.filter_by(gender='Female', role='user').count()
-    savings_accounts = User.query.filter_by(account_type='Savings', role='user').count()
-    current_accounts = User.query.filter_by(account_type='Current', role='user').count()
+    savings_accounts = User.query.filter_by(account_type='savings', role='user').count()
+    current_accounts = User.query.filter_by(account_type='current', role='user').count()
 
     return jsonify({
         "total_users": total_users,
@@ -242,6 +243,7 @@ def list_users():
             "dob": u.dob,
             "adhaar": u.adhaar,
             "pan": u.pan,
+            "account_number": u.account_number,
             "account_type": u.account_type,
             "initial_balance": u.initial_balance,
             "type_of_account": u.type_of_account

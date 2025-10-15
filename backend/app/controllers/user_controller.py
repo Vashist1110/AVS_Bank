@@ -59,15 +59,15 @@ def login():
     user = User.query.filter_by(phone=data['phone']).first()
 
     if user and user.check_password(data['password']):
-        token = create_access_token(identity=str(user.id))
+        token = create_access_token(identity=str(user.account_number))
         return jsonify(access_token=token), 200
 
     return jsonify({"msg": "Invalid phone number or password"}), 401
 
 @jwt_required()
 def get_profile():
-    user_id = int(get_jwt_identity())
-    user = User.query.get(user_id)
+    account_number = get_jwt_identity()
+    user = User.query.filter_by(account_number=account_number).first()
 
     if not user:
         return jsonify({"msg": "User not found"}), 404
@@ -91,8 +91,8 @@ def get_profile():
 
 @jwt_required()
 def request_kyc_update():
-    user_id = int(get_jwt_identity())
-    user = User.query.get(user_id)
+    account_number = get_jwt_identity()
+    user = User.query.filter_by(account_number=account_number).first()
 
     pancard = request.files.get('pancard')
     photo = request.files.get('photo')
@@ -132,8 +132,8 @@ def deposit():
     if not amount or amount <= 0:
         return jsonify({"msg": "Invalid deposit amount"}), 400
 
-    user_id = int(get_jwt_identity())
-    user = User.query.get(user_id)
+    account_number = get_jwt_identity()
+    user = User.query.filter_by(account_number=account_number).first()
     user.initial_balance += amount
     transaction = Transaction(
         user_id=user.id,
@@ -154,8 +154,8 @@ def withdraw():
     if not amount or amount <= 0:
         return jsonify({"msg": "Invalid withdrawal amount"}), 400
 
-    user_id = int(get_jwt_identity())
-    user = User.query.get(user_id)
+    account_number = get_jwt_identity()
+    user = User.query.filter_by(account_number=account_number).first()
 
     if user.initial_balance < amount:
         return jsonify({"msg": "Insufficient funds"}), 400
@@ -176,8 +176,8 @@ def withdraw():
 
 @jwt_required()
 def request_update():
-    user_id = int(get_jwt_identity())
-    user = User.query.get(user_id)
+    account_number = get_jwt_identity()
+    user = User.query.filter_by(account_number=account_number).first()
     data = request.get_json()
 
     allowed_fields = ['name', 'email', 'phone', 'gender', 'dob']

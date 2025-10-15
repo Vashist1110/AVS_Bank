@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { adminAPI, authHelpers } from '../services/api';
 import './Create_Account.css';
 
 function AdminLogin() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     username: '',
     password: '',
@@ -9,6 +12,7 @@ function AdminLogin() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -26,13 +30,37 @@ function AdminLogin() {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
     setErrors(validationErrors);
+    
     if (Object.keys(validationErrors).length === 0) {
-      alert('Admin login successful!');
-      setForm({ username: '', password: '', robot: false });
+      setLoading(true);
+      try {
+        const credentials = {
+          username: form.username,
+          password: form.password
+        };
+        
+        const response = await adminAPI.login(credentials);
+        
+        if (response.data.access_token) {
+          authHelpers.saveToken(response.data.access_token, 'admin');
+          navigate('/admin-dashboard');
+        }
+      } catch (error) {
+        console.error('Admin login error:', error);
+        if (error.response?.status === 401) {
+          setErrors({ password: 'Invalid username or password' });
+        } else if (error.response?.data?.msg) {
+          setErrors({ username: error.response.data.msg });
+        } else {
+          setErrors({ username: 'Login failed. Please try again.' });
+        }
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -104,7 +132,9 @@ function AdminLogin() {
               {errors.robot && <span className="error">{errors.robot}</span>}
             </div>
           </div>
-          <button type="submit" className="account-submit">Login</button>
+          <button type="submit" className="account-submit" disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
         </form>
       </div>
       <style>{`

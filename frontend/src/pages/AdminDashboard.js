@@ -1,95 +1,135 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { adminAPI, authHelpers } from '../services/api';
 import './AdminDashboard.css';
 
 function AdminDashboard() {
-  const [stats] = useState({
-    total_users: 4,
-    male_users: 2,
-    female_users: 2,
-    savings_accounts: 3,
-    current_accounts: 1,
-    total_balance: 185000,
+  const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    total_users: 0,
+    male_users: 0,
+    female_users: 0,
+    savings_accounts: 0,
+    current_accounts: 0,
+    total_balance: 0,
   });
 
-  const [users] = useState([
-    {
-      id: 1,
-      name: 'Ayush Kumar',
-      accountNo: '123456789012',
-      phone: '9876543210',
-      account_type: 'Savings',
-      initial_balance: 25000,
-      kycStatus: 'Pending',
-    },
-    {
-      id: 2,
-      name: 'Riya Sharma',
-      accountNo: '987654321098',
-      phone: '9123456780',
-      account_type: 'Current',
-      initial_balance: 50000,
-      kycStatus: 'Approved',
-    },
-    {
-      id: 3,
-      name: 'Ankit Verma',
-      accountNo: '456789123456',
-      phone: '9988776655',
-      account_type: 'Savings',
-      initial_balance: 60000,
-      kycStatus: 'Approved',
-    },
-    {
-      id: 4,
-      name: 'Neha Singh',
-      accountNo: '321654987321',
-      phone: '9871234560',
-      account_type: 'Savings',
-      initial_balance: 45000,
-      kycStatus: 'Rejected',
-    },
-  ]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState('');
 
-  const [pendingUpdates, setPendingUpdates] = useState([
-    {
-      id: 101,
-      userId: 1,
-      requested: {
-        phone: '9998887776',
-        account_type: 'Current',
-      },
-      timestamp: '2025-10-15 14:30',
-    },
-  ]);
-
+  const [pendingUpdates, setPendingUpdates] = useState([]);
   const [kycMessage, setKycMessage] = useState('');
   const [showUserList, setShowUserList] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [kycRequests, setKycRequests] = useState([]);
 
-  const handleKycAction = (id, action) => {
-    setKycMessage(`KYC ${action} for user ID ${id}`);
-    setTimeout(() => setKycMessage(''), 3000);
+
+  // Fetch dashboard data on component mount
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        // Fetch dashboard stats
+        const statsResponse = await adminAPI.getDashboard();
+        setStats(statsResponse.data);
+
+        // Fetch all users
+        const usersResponse = await adminAPI.listUsers();
+        setUsers(usersResponse.data);
+
+        // Fetch pending KYC requests
+        try {
+          const kycResp = await adminAPI.listKycRequests();
+          setKycRequests(kycResp.data || []);
+        } catch (e) {
+          console.warn('Failed to fetch KYC requests', e);
+        }
+
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        if (error.response?.status === 401) {
+          authHelpers.removeToken();
+          navigate('/admin-login');
+        } else {
+          setMessage('Failed to load dashboard data');
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchDashboardData();
+  }, [navigate]);
+
+  const handleLogout = () => {
+    authHelpers.removeToken();
+    navigate('/');
   };
 
-  const handleApproveUpdate = (updateId) => {
-    setPendingUpdates(pendingUpdates.filter(u => u.id !== updateId));
+  const handleKycAction = async (id, action) => {
+    try {
+      const resp = await adminAPI.processKycRequest(id, action.toLowerCase());
+      setKycMessage(resp.data.msg || `KYC ${action} processed`);
+
+      // Remove the processed request from the list
+      setKycRequests(prev => prev.filter(r => r.id !== id));
+      setTimeout(() => setKycMessage(''), 3000);
+    } catch (error) {
+      console.error('KYC action error:', error);
+      setKycMessage('Failed to process KYC action');
+    }
   };
 
-  const handleRejectUpdate = (updateId) => {
-    setPendingUpdates(pendingUpdates.filter(u => u.id !== updateId));
+  const handleApproveUpdate = async (updateId) => {
+    try {
+      // Note: Backend needs update request endpoint
+      setPendingUpdates(pendingUpdates.filter(u => u.id !== updateId));
+      setMessage('Update approved successfully');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (error) {
+      console.error('Approve update error:', error);
+      setMessage('Failed to approve update');
+    }
+  };
+
+  const handleRejectUpdate = async (updateId) => {
+    try {
+      // Note: Backend needs update request endpoint
+      setPendingUpdates(pendingUpdates.filter(u => u.id !== updateId));
+      setMessage('Update rejected successfully');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (error) {
+      console.error('Reject update error:', error);
+      setMessage('Failed to reject update');
+    }
   };
 
   const filteredUsers = users.filter(user =>
-    user.accountNo.includes(searchQuery.trim())
+    user.account_number?.includes(searchQuery.trim()) || 
+    user.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <div className="dashboard-container">
+        <nav className="dashboard-navbar">
+          <span className="dashboard-logo">AVS Bank</span>
+          <span className="dashboard-title">Admin Dashboard</span>
+        </nav>
+        <div style={{ textAlign: 'center', padding: '50px' }}>Loading dashboard...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-container">
       <nav className="dashboard-navbar">
         <span className="dashboard-logo">AVS Bank</span>
         <span className="dashboard-title">Admin Dashboard</span>
-        <button className="dashboard-logout">Logout</button>
+        <button className="dashboard-logout" onClick={handleLogout}>Logout</button>
       </nav>
+
+      {message && <div className="actions-message" style={{margin: '20px', textAlign: 'center'}}>{message}</div>}
 
       {/* Dashboard Stats */}
       <main className="dashboard-main">
@@ -107,43 +147,46 @@ function AdminDashboard() {
       <main className="dashboard-main">
         <section className="dashboard-actions">
           <h2 className="actions-heading">KYC Management</h2>
-          <table className="styled-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Account No</th>
-                <th>Phone</th>
-                <th>Type</th>
-                <th>Balance</th>
-                <th>KYC</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map(user => (
-                <tr key={user.id}>
-                  <td>{user.name}</td>
-                  <td>{user.accountNo}</td>
-                  <td>{user.phone}</td>
-                  <td>{user.account_type}</td>
-                  <td>₹{user.initial_balance.toLocaleString()}</td>
-                  <td>
-                    <span className={`kyc-badge ${user.kycStatus.toLowerCase()}`}>
-                      {user.kycStatus}
-                    </span>
-                  </td>
-                  <td>
-                    {user.kycStatus === 'Pending' && (
-                      <>
-                        <button onClick={() => handleKycAction(user.id, 'Approved')}>Approve</button>
-                        <button onClick={() => handleKycAction(user.id, 'Rejected')}>Reject</button>
-                      </>
-                    )}
-                  </td>
+          {kycRequests.length > 0 ? (
+            <table className="styled-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Account No</th>
+                  <th>Phone</th>
+                  <th>KYC Documents</th>
+                  <th>Timestamp</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {kycRequests.map(req => {
+                  const user = users.find(u => u.id === req.user_id) || {};
+                  return (
+                    <tr key={req.id}>
+                      <td>{user.name || 'Unknown'}</td>
+                      <td>{req.account_number || user.account_number || 'N/A'}</td>
+                      <td>{user.phone || 'N/A'}</td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
+                          <a href={req.pancard_image} target="_blank" rel="noreferrer">View PAN</a>
+                          <a href={req.photo_image} target="_blank" rel="noreferrer">View Photo</a>
+                          <a href={req.signature_image} target="_blank" rel="noreferrer">View Signature</a>
+                        </div>
+                      </td>
+                      <td>{req.timestamp}</td>
+                      <td>
+                        <button onClick={() => handleKycAction(req.id, 'approve')}>Approve</button>
+                        <button onClick={() => handleKycAction(req.id, 'reject')}>Reject</button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          ) : (
+            <p>No pending KYC requests.</p>
+          )}
           {kycMessage && <div className="actions-message">{kycMessage}</div>}
         </section>
       </main>
@@ -171,7 +214,7 @@ function AdminDashboard() {
                   return (
                     <tr key={update.id}>
                       <td>{user?.name}</td>
-                      <td>{user?.accountNo}</td>
+                      <td>{user?.account_number || 'N/A'}</td>
                       <td>
                         {Object.entries(update.requested).map(([key, val]) => (
                           <div key={key}>
@@ -223,10 +266,10 @@ function AdminDashboard() {
                 {filteredUsers.map(user => (
                   <tr key={user.id}>
                     <td>{user.name}</td>
-                    <td>{user.accountNo}</td>
+                    <td>{user.account_number || 'N/A'}</td>
                     <td>{user.phone}</td>
                     <td>{user.account_type}</td>
-                    <td>₹{user.initial_balance.toLocaleString()}</td>
+                    <td>₹{user.initial_balance?.toLocaleString() || 0}</td>
                   </tr>
                 ))}
               </tbody>

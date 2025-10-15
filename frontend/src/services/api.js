@@ -17,6 +17,9 @@ api.interceptors.request.use(
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('Interceptor: Token added to request', config.url);
+    } else {
+      console.warn('Interceptor: No token found in localStorage');
     }
     return config;
   },
@@ -41,6 +44,15 @@ export const userAPI = {
   
   // Withdraw money
   withdraw: (amount) => api.post('/withdraw', { amount }),
+  
+  // Submit KYC documents
+  submitKYC: (formData) => {
+    return api.post('/request-kyc-update', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  },
 };
 
 // Admin APIs
@@ -60,6 +72,12 @@ export const adminAPI = {
   // Get dashboard data
   getDashboard: () => api.get('/admin/dashboard'),
   
+  // List pending KYC requests
+  listKycRequests: () => api.get('/admin/kyc-requests'),
+
+  // Process a KYC request (approve/reject)
+  processKycRequest: (requestId, action) => api.post(`/admin/kyc-requests/${requestId}`, { action }),
+  
   // Create a new user
   createUser: (userData) => api.post('/admin/create-user', userData),
 };
@@ -67,8 +85,9 @@ export const adminAPI = {
 // Helper functions
 export const authHelpers = {
   // Save token to localStorage
-  saveToken: (token) => {
+  saveToken: (token, role = 'user') => {
     localStorage.setItem('token', token);
+    localStorage.setItem('userRole', role);
   },
   
   // Get token from localStorage
@@ -76,14 +95,25 @@ export const authHelpers = {
     return localStorage.getItem('token');
   },
   
+  // Get user role
+  getRole: () => {
+    return localStorage.getItem('userRole') || 'user';
+  },
+  
   // Remove token from localStorage
   removeToken: () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
   },
   
   // Check if user is authenticated
   isAuthenticated: () => {
     return !!localStorage.getItem('token');
+  },
+  
+  // Check if current user is admin
+  isAdmin: () => {
+    return localStorage.getItem('userRole') === 'admin';
   },
 };
 
