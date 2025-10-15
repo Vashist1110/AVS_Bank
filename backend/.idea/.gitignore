@@ -1,7 +1,22 @@
-# Default ignored files
-/shelf/
-/workspace.xml
-
+# Python cache
 __pycache__/
 *.pyc
 
+# Recursively ignore all nested __pycache__ folders and .pyc files
+**/__pycache__/
+**/*.pyc
+
+# SQLite database
+instance/*.db
+
+# IDE/editor settings
+.idea/
+.vscode/
+*.swp
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Uploads or media (if applicable)
+uploads/
