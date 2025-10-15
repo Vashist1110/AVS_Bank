@@ -201,7 +201,7 @@ def list_update_requests():
     ]), 200
 
 
-    @jwt_required()
+@jwt_required()
 @role_required('admin')
 def process_update_request(request_id):
     from app.model.update_request_model import UserUpdateRequest
