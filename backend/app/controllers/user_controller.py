@@ -2,7 +2,11 @@ from flask import request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from app.model.models import User
 from app.model.transactionmodel import Transaction
-from app import db
+from app.model.update_request_model import UserUpdateRequest
+from app.model.kyc_request_model import KYCUpdateRequest
+import os
+from werkzeug.utils import secure_filename
+from flask import current_appfrom app import db
 
 def register():
     data = request.get_json()
@@ -85,6 +89,41 @@ def get_profile():
 
 
 @jwt_required()
+def request_kyc_update():
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+
+    pancard = request.files.get('pancard')
+    photo = request.files.get('photo')
+    signature = request.files.get('signature')
+
+    if not pancard or not photo or not signature:
+        return jsonify({"msg": "All three files are required"}), 400
+
+    upload_folder = os.path.join(current_app.root_path, 'uploads', 'kyc')
+    os.makedirs(upload_folder, exist_ok=True)
+
+    pancard_path = os.path.join(upload_folder, secure_filename(pancard.filename))
+    photo_path = os.path.join(upload_folder, secure_filename(photo.filename))
+    signature_path = os.path.join(upload_folder, secure_filename(signature.filename))
+
+    pancard.save(pancard_path)
+    photo.save(photo_path)
+    signature.save(signature_path)
+
+    kyc_request = KYCUpdateRequest(
+        user_id=user.id,
+        pancard_image=pancard_path,
+        photo_image=photo_path,
+        signature_image=signature_path
+    )
+    db.session.add(kyc_request)
+    db.session.commit()
+
+    return jsonify({"msg": "KYC update request submitted"}), 200
+
+
+@jwt_required()
 def deposit():
     data = request.get_json()
     amount = data.get('amount')
@@ -131,3 +170,32 @@ def withdraw():
     db.session.commit()
 
     return jsonify({"msg": f"Withdrew ₹{amount} successfully", "new_balance": user.initial_balance}), 200
+
+
+
+@jwt_required()
+def request_update():
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    data = request.get_json()
+
+    allowed_fields = ['name', 'email', 'phone', 'gender', 'dob']
+    requests = []
+
+    for field in allowed_fields:
+        if field in data and getattr(user, field) != data[field]:
+            req = UserUpdateRequest(
+                user_id=user.id,
+                field=field,
+                old_value=getattr(user, field),
+                new_value=data[field]
+            )
+            requests.append(req)
+
+    if not requests:
+        return jsonify({"msg": "No changes submitted"}), 400
+
+    db.session.add_all(requests)
+    db.session.commit()
+
+    return jsonify({"msg": "Update request submitted for approval"}), 200

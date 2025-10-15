@@ -4,6 +4,7 @@ from app.model.models import User
 from app import db
 from app.utils.decorators import role_required
 from app.model.transactionmodel import Transaction
+from app.model.kyc_request_model import KYCUpdateRequest
 from app.model.adminmodel import Admin
 
 
@@ -18,6 +19,47 @@ def admin_login():
         return jsonify(access_token=token), 200
 
     return jsonify({"msg": "Invalid credentials"}), 401
+
+
+
+
+@jwt_required()
+@role_required('admin')
+def list_kyc_requests():
+    requests = KYCUpdateRequest.query.filter_by(status='pending').all()
+    return jsonify([
+        {
+            "id": r.id,
+            "user_id": r.user_id,
+            "pancard_image": r.pancard_image,
+            "photo_image": r.photo_image,
+            "signature_image": r.signature_image,
+            "timestamp": r.timestamp.strftime("%Y-%m-%d %H:%M:%S")
+        } for r in requests
+    ]), 200
+
+
+@jwt_required()
+@role_required('admin')
+def process_kyc_request(request_id):
+    data = request.get_json()
+    action = data.get('action')  # 'approve' or 'reject'
+
+    req = KYCUpdateRequest.query.get(request_id)
+    if not req or req.status != 'pending':
+        return jsonify({"msg": "Request not found or already processed"}), 404
+
+    if action == 'approve':
+        req.status = 'approved'
+        # Optionally update user's verified status or store approved KYC files
+    elif action == 'reject':
+        req.status = 'rejected'
+    else:
+        return jsonify({"msg": "Invalid action"}), 400
+
+    db.session.commit()
+    return jsonify({"msg": f"KYC request {action}ed successfully"}), 200
+
 
 
 @jwt_required()
@@ -139,6 +181,50 @@ def create_user():
     db.session.commit()
 
     return jsonify({"msg": "User created successfully"}), 201
+
+
+@jwt_required()
+@role_required('admin')
+def list_update_requests():
+    from app.model.update_request_model import UserUpdateRequest
+
+    requests = UserUpdateRequest.query.filter_by(status='pending').all()
+    return jsonify([
+        {
+            "id": r.id,
+            "user_id": r.user_id,
+            "field": r.field,
+            "old_value": r.old_value,
+            "new_value": r.new_value,
+            "timestamp": r.timestamp.strftime("%Y-%m-%d %H:%M:%S")
+        } for r in requests
+    ]), 200
+
+
+    @jwt_required()
+@role_required('admin')
+def process_update_request(request_id):
+    from app.model.update_request_model import UserUpdateRequest
+
+    data = request.get_json()
+    action = data.get('action')  # 'approve' or 'reject'
+
+    req = UserUpdateRequest.query.get(request_id)
+    if not req or req.status != 'pending':
+        return jsonify({"msg": "Request not found or already processed"}), 404
+
+    if action == 'approve':
+        user = User.query.get(req.user_id)
+        setattr(user, req.field, req.new_value)
+        req.status = 'approved'
+    elif action == 'reject':
+        req.status = 'rejected'
+    else:
+        return jsonify({"msg": "Invalid action"}), 400
+
+    db.session.commit()
+    return jsonify({"msg": f"Request {action}ed successfully"}), 200
+
 
 
 
