@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userAPI, authHelpers } from '../services/api';
+import Notification from '../components/Notification';
 import './Create_Account.css';
 
 function UserLogin() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState(null);
   const [form, setForm] = useState({
     contact: '',
     password: '',
@@ -50,7 +52,7 @@ function UserLogin() {
         // Save token (backend returns access_token)
         if (response.data.access_token) {
           authHelpers.saveToken(response.data.access_token, 'user');
-          alert('Login successful!');
+          setNotification({ message: 'Login successful! Redirecting...', type: 'success' });
           
           // Reset form
           setForm({ contact: '', password: '', robot: false });
@@ -58,23 +60,23 @@ function UserLogin() {
           // Navigate to user dashboard
           setTimeout(() => {
             navigate('/user-dashboard');
-          }, 1000);
+          }, 2000);
         } else {
-          alert('Login successful but no token received');
+          setNotification({ message: 'Login successful but no token received', type: 'warning' });
         }
         
       } catch (error) {
         console.error('Login error:', error);
         if (error.response) {
           if (error.response.status === 401) {
-            alert('Invalid phone number or password');
+            setNotification({ message: 'Invalid phone number or password', type: 'error' });
           } else {
-            alert(`Login failed: ${error.response.data.msg || 'Please try again'}`);
+            setNotification({ message: error.response.data.msg || 'Login failed. Please try again.', type: 'error' });
           }
         } else if (error.request) {
-          alert('No response from server. Please check if the backend is running.');
+          setNotification({ message: 'No response from server. Please check if the backend is running.', type: 'error' });
         } else {
-          alert('Login failed. Please try again.');
+          setNotification({ message: 'Login failed. Please try again.', type: 'error' });
         }
       } finally {
         setLoading(false);
@@ -84,6 +86,13 @@ function UserLogin() {
 
   return (
     <div className="account-page-bg">
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
       <div className="avs-topbar">
         <span className="avs-bank-name">AVS Bank</span>
       </div>
@@ -152,6 +161,17 @@ function UserLogin() {
           <button type="submit" className="account-submit" disabled={loading}>
             {loading ? 'Logging in...' : 'Login'}
           </button>
+          <div style={{textAlign: 'center', marginTop: '1.5rem'}}>
+            <p style={{color: '#666', fontSize: '0.95rem'}}>
+              Don't have an account?{' '}
+              <span 
+                onClick={() => navigate('/create_account')}
+                style={{color: '#d32f2f', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline'}}
+              >
+                Create Account
+              </span>
+            </p>
+          </div>
         </form>
       </div>
     </div>

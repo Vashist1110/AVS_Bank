@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminAPI, authHelpers } from '../services/api';
+import Notification from '../components/Notification';
 import './Create_Account.css';
 
 function AdminLogin() {
@@ -13,6 +14,7 @@ function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState(null);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -47,16 +49,19 @@ function AdminLogin() {
         
         if (response.data.access_token) {
           authHelpers.saveToken(response.data.access_token, 'admin');
-          navigate('/admin-dashboard');
+          setNotification({ message: 'Admin login successful! Redirecting...', type: 'success' });
+          setTimeout(() => {
+            navigate('/admin-dashboard');
+          }, 2000);
         }
       } catch (error) {
         console.error('Admin login error:', error);
         if (error.response?.status === 401) {
-          setErrors({ password: 'Invalid username or password' });
+          setNotification({ message: 'Invalid username or password', type: 'error' });
         } else if (error.response?.data?.msg) {
-          setErrors({ username: error.response.data.msg });
+          setNotification({ message: error.response.data.msg, type: 'error' });
         } else {
-          setErrors({ username: 'Login failed. Please try again.' });
+          setNotification({ message: 'Login failed. Please try again.', type: 'error' });
         }
       } finally {
         setLoading(false);
@@ -66,6 +71,13 @@ function AdminLogin() {
 
   return (
     <div className="account-page-bg">
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
       <div className="avs-topbar">
         <span className="avs-bank-name">AVS Bank</span>
       </div>
@@ -149,6 +161,8 @@ function AdminLogin() {
         .admin-welcome-drop {
           display: flex;
           gap: 2px;
+          flex-wrap: wrap;
+          justify-content: center;
         }
         .drop-letter {
           display: inline-block;
@@ -164,6 +178,41 @@ function AdminLogin() {
           to {
             opacity: 1;
             transform: translateY(0);
+          }
+        }
+        
+        /* Responsive styles for admin welcome text */
+        @media (max-width: 768px) {
+          .admin-welcome-center {
+            min-height: 60px;
+          }
+          .drop-letter {
+            font-size: 2.2rem;
+            letter-spacing: 1px;
+          }
+        }
+        
+        @media (max-width: 640px) {
+          .admin-welcome-center {
+            min-height: 50px;
+          }
+          .drop-letter {
+            font-size: 1.8rem;
+            letter-spacing: 0.5px;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .admin-welcome-center {
+            min-height: 40px;
+            padding: 0 8px;
+          }
+          .drop-letter {
+            font-size: 1.4rem;
+            letter-spacing: 0px;
+          }
+          .admin-welcome-drop {
+            gap: 1px;
           }
         }
       `}</style>

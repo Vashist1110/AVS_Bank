@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userAPI } from '../services/api';
+import Notification from '../components/Notification';
 import './Create_Account.css';
 
 const accountTypes = [
@@ -34,6 +35,7 @@ function CreateAccount() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState(null);
   const [form, setForm] = useState({
     fullName: '',
     contact: '',
@@ -119,7 +121,7 @@ function CreateAccount() {
 
         const response = await userAPI.register(userData);
         
-        alert('Account created successfully! Please login with your credentials.');
+        setNotification({ message: 'Account created successfully! Redirecting to login...', type: 'success' });
         
         // Reset form
         setForm({
@@ -140,17 +142,17 @@ function CreateAccount() {
         // Navigate to login page
         setTimeout(() => {
           navigate('/login');
-        }, 1500);
+        }, 2000);
         
       } catch (error) {
         console.error('Registration error:', error);
         if (error.response) {
           const errorMsg = error.response.data.msg || error.response.data.message || 'Please try again';
-          alert(`Registration failed: ${errorMsg}`);
+          setNotification({ message: `Registration failed: ${errorMsg}`, type: 'error' });
         } else if (error.request) {
-          alert('No response from server. Please check if the backend is running on port 5000.');
+          setNotification({ message: 'No response from server. Please check if the backend is running.', type: 'error' });
         } else {
-          alert(`Registration failed: ${error.message}`);
+          setNotification({ message: `Registration failed: ${error.message}`, type: 'error' });
         }
       } finally {
         setLoading(false);
@@ -165,6 +167,13 @@ function CreateAccount() {
 
   return (
     <div className="account-page-bg">
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
       <div className="avs-topbar">
         <span className="avs-bank-name">AVS Bank</span>
       </div>
@@ -289,6 +298,17 @@ function CreateAccount() {
           <button type="submit" className="account-submit" disabled={loading}>
             {loading ? 'Creating Account...' : 'Create Account'}
           </button>
+          <div style={{textAlign: 'center', marginTop: '1.5rem'}}>
+            <p style={{color: '#666', fontSize: '0.95rem'}}>
+              Already have an account?{' '}
+              <span 
+                onClick={() => navigate('/login')}
+                style={{color: '#d32f2f', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline'}}
+              >
+                Login Here
+              </span>
+            </p>
+          </div>
         </form>
       </div>
     </div>

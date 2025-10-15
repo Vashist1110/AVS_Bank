@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userAPI, authHelpers } from '../services/api';
+import Notification from '../components/Notification';
 import './UserDashboard.css';
 
 function UserDashboard() {
@@ -13,6 +14,7 @@ function UserDashboard() {
   const [action, setAction] = useState('deposit');
   const [transferAcc, setTransferAcc] = useState('');
   const [message, setMessage] = useState('');
+  const [notification, setNotification] = useState(null);
   const [kycCompleted, setKycCompleted] = useState(false);
   const [hasPendingUpdate, setHasPendingUpdate] = useState(false);
   const [kycStatus, setKycStatus] = useState('not_submitted'); // not_submitted, pending, approved, rejected
@@ -47,8 +49,11 @@ function UserDashboard() {
   }, [navigate]);
 
   const handleLogout = () => {
+    setNotification({ message: 'Logged out successfully!', type: 'success' });
     authHelpers.removeToken();
-    navigate('/');
+    setTimeout(() => {
+      navigate('/');
+    }, 1500);
   };
 
   const handleTransaction = async (e) => {
@@ -138,6 +143,13 @@ function UserDashboard() {
 
   return (
     <div className="dashboard-bg">
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
       <nav className="dashboard-navbar">
         <span className="dashboard-logo">AVS Bank</span>
         <span className="dashboard-title">User Dashboard</span>

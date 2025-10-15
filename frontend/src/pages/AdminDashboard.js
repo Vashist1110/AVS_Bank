@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminAPI, authHelpers } from '../services/api';
+import Notification from '../components/Notification';
 import './AdminDashboard.css';
 
 function AdminDashboard() {
@@ -17,6 +18,7 @@ function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const [notification, setNotification] = useState(null);
 
   const [pendingUpdates, setPendingUpdates] = useState([]);
   const [kycMessage, setKycMessage] = useState('');
@@ -70,8 +72,11 @@ function AdminDashboard() {
   }, [navigate]);
 
   const handleLogout = () => {
+    setNotification({ message: 'Admin logged out successfully!', type: 'success' });
     authHelpers.removeToken();
-    navigate('/');
+    setTimeout(() => {
+      navigate('/');
+    }, 1500);
   };
 
   const handleKycAction = async (id, action) => {
@@ -135,6 +140,13 @@ function AdminDashboard() {
 
   return (
     <div className="dashboard-container">
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
       <nav className="dashboard-navbar">
         <span className="dashboard-logo">AVS Bank</span>
         <span className="dashboard-title">Admin Dashboard</span>
@@ -188,8 +200,25 @@ function AdminDashboard() {
                       </td>
                       <td>{req.timestamp}</td>
                       <td>
-                        <button onClick={() => handleKycAction(req.id, 'approve')}>Approve</button>
-                        <button onClick={() => handleKycAction(req.id, 'reject')}>Reject</button>
+                        <button 
+                          onClick={() => handleKycAction(req.id, 'approve')}
+                          style={{ 
+                            background: '#009e60', 
+                            color: 'white',
+                            marginRight: '5px'
+                          }}
+                        >
+                          Approve
+                        </button>
+                        <button 
+                          onClick={() => handleKycAction(req.id, 'reject')}
+                          style={{ 
+                            background: '#e31837', 
+                            color: 'white'
+                          }}
+                        >
+                          Reject
+                        </button>
                       </td>
                     </tr>
                   );
@@ -234,8 +263,25 @@ function AdminDashboard() {
                       <td style={{ color: 'green', fontWeight: 'bold' }}>{update.new_value}</td>
                       <td>{update.timestamp}</td>
                       <td>
-                        <button onClick={() => handleApproveUpdate(update.id)}>Approve</button>
-                        <button onClick={() => handleRejectUpdate(update.id)}>Reject</button>
+                        <button 
+                          onClick={() => handleApproveUpdate(update.id)}
+                          style={{ 
+                            background: '#009e60', 
+                            color: 'white',
+                            marginRight: '5px'
+                          }}
+                        >
+                          Approve
+                        </button>
+                        <button 
+                          onClick={() => handleRejectUpdate(update.id)}
+                          style={{ 
+                            background: '#e31837', 
+                            color: 'white'
+                          }}
+                        >
+                          Reject
+                        </button>
                       </td>
                     </tr>
                   );
