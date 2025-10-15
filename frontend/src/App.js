@@ -6,6 +6,7 @@ import Login from './pages/User_Login';
 import AdminLogin from './pages/Admin_Login';
 import AdminDashboard from './pages/AdminDashboard';
 import Kyc from "./pages/KYC";
+import UpdateProfile from "./pages/UpdateProfile";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { PrivateRoute, PublicRoute, AdminRoute, AdminPublicRoute } from './components/ProtectedRoute';
 
@@ -38,6 +39,12 @@ function App() {
           <Route path="/kyc" element={
             <PrivateRoute>
               <Kyc />
+            </PrivateRoute>
+          } />
+          
+          <Route path="/update-profile" element={
+            <PrivateRoute>
+              <UpdateProfile />
             </PrivateRoute>
           } />
           

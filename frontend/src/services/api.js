@@ -53,6 +53,9 @@ export const userAPI = {
       }
     });
   },
+  
+  // Request profile update
+  requestUpdate: (updateData) => api.post('/request-update', updateData),
 };
 
 // Admin APIs
@@ -77,6 +80,12 @@ export const adminAPI = {
 
   // Process a KYC request (approve/reject)
   processKycRequest: (requestId, action) => api.post(`/admin/kyc-requests/${requestId}`, { action }),
+  
+  // List pending profile update requests
+  listUpdateRequests: () => api.get('/admin/update-requests'),
+  
+  // Process a profile update request (approve/reject)
+  processUpdateRequest: (requestId, action) => api.post(`/admin/update-requests/${requestId}`, { action }),
   
   // Create a new user
   createUser: (userData) => api.post('/admin/create-user', userData),
