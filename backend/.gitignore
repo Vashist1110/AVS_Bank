@@ -1,9 +1,10 @@
-<<<<<<< HEAD
-# Byte-compiled / optimized / DLL files
+# Python cache files
 __pycache__/
 *.py[cod]
 *$py.class
 *.pyc
+*.pyo
+*.pyd
 
 # C extensions
 *.so
@@ -124,31 +125,18 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# IDE
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# Database
+# Database files
 *.db
 *.sqlite
 *.sqlite3
-=======
-# Python cache
-__pycache__/
-*.pyc
-
-# IDE files
-.idea/
-
-# Database files
-*.db
+instance/*.db
 
 # System files
 .DS_Store
-
-# Ignore all .gitignore files except the root one
-!.gitignore
->>>>>>> f22cb43dfb3b2a5867a5374857b8da69b6457594
