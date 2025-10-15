@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userAPI, authHelpers } from '../services/api';
-import './KYC.css'; // Reusing KYC styles for consistency
+import './UpdateProfile.css';
 
 function UpdateProfile() {
   const navigate = useNavigate();
@@ -110,90 +110,70 @@ function UpdateProfile() {
   };
 
   return (
-    <div className="kyc-bg">
-      <div className="kyc-card">
-        <div className="kyc-header">
-          <h2 className="kyc-title">Update Profile Request</h2>
-          <p style={{ color: '#666', fontSize: '14px', marginTop: '8px' }}>
+    <div className="update-profile-bg">
+      <div className="update-profile-card">
+        <div className="update-profile-header">
+          <h2 className="update-profile-title">Update Profile Request</h2>
+          <p className="update-profile-subtitle">
             Submit a request to update your profile information. Changes will be reviewed by admin.
           </p>
         </div>
 
-        <form className="kyc-form" onSubmit={handleSubmit} style={{ marginTop: '20px' }}>
-          <div className="kyc-documents-list">
+        <form className="update-profile-form" onSubmit={handleSubmit}>
+          <div className="update-form-row">
             {/* Name */}
-            <div className="kyc-applicant" style={{ marginBottom: '20px' }}>
-              <label className="kyc-label">Full Name</label>
+            <div className="update-form-field full-width">
+              <label className="update-form-label">Full Name</label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Enter your full name"
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '14px'
-                }}
+                className="update-form-input"
               />
             </div>
+          </div>
 
+          <div className="update-form-row">
             {/* Email */}
-            <div className="kyc-applicant" style={{ marginBottom: '20px' }}>
-              <label className="kyc-label">Email Address</label>
+            <div className="update-form-field">
+              <label className="update-form-label">Email Address</label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="Enter your email"
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '14px'
-                }}
+                className="update-form-input"
               />
             </div>
 
             {/* Phone */}
-            <div className="kyc-applicant" style={{ marginBottom: '20px' }}>
-              <label className="kyc-label">Phone Number</label>
+            <div className="update-form-field">
+              <label className="update-form-label">Phone Number</label>
               <input
                 type="tel"
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                placeholder="Enter your phone number"
+                placeholder="10-digit number"
                 pattern="[0-9]{10}"
                 maxLength="10"
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '14px'
-                }}
+                className="update-form-input"
               />
             </div>
+          </div>
 
+          <div className="update-form-row">
             {/* Gender */}
-            <div className="kyc-applicant" style={{ marginBottom: '20px' }}>
-              <label className="kyc-label">Gender</label>
+            <div className="update-form-field">
+              <label className="update-form-label">Gender</label>
               <select
                 name="gender"
                 value={formData.gender}
                 onChange={handleChange}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '14px'
-                }}
+                className="update-form-select"
               >
                 <option value="">Select Gender</option>
                 <option value="Male">Male</option>
@@ -203,56 +183,39 @@ function UpdateProfile() {
             </div>
 
             {/* Date of Birth */}
-            <div className="kyc-applicant" style={{ marginBottom: '20px' }}>
-              <label className="kyc-label">Date of Birth</label>
+            <div className="update-form-field">
+              <label className="update-form-label">Date of Birth</label>
               <input
                 type="date"
                 name="dob"
                 value={formData.dob}
                 onChange={handleChange}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '14px'
-                }}
+                className="update-form-input"
               />
             </div>
           </div>
 
-          {error && <div className="kyc-error">{error}</div>}
-          
-          <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+          {error && <div className="update-error-message">{error}</div>}
+
+          <div className="update-buttons-container">
             <button 
               type="submit" 
-              className="kyc-submit-btn" 
+              className="update-submit-btn" 
               disabled={loading || submitted}
-              style={{ flex: 1 }}
             >
               {loading ? 'Submitting...' : submitted ? 'Submitted!' : 'Submit Request'}
             </button>
             <button
               type="button"
               onClick={() => navigate('/user-dashboard')}
-              style={{
-                flex: 1,
-                padding: '12px',
-                background: '#666',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                cursor: 'pointer'
-              }}
+              className="update-cancel-btn"
             >
               Cancel
             </button>
           </div>
           
           {submitted && (
-            <div className="kyc-success">
+            <div className="update-success-message">
               Update request submitted successfully! Redirecting...
             </div>
           )}

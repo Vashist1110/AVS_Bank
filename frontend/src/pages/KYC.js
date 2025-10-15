@@ -189,9 +189,6 @@ function KYC() {
         </div>
         <div className="kyc-documents-header">
           <span className="kyc-documents-title">KYC Documents</span>
-          <span className="kyc-documents-user">
-            <b>Applicant:</b> {firstName || 'First Name'} {lastName || 'Last Name'}
-          </span>
         </div>
         <form className="kyc-form" onSubmit={handleSubmit}>
           <div className="kyc-documents-list">
