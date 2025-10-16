@@ -359,19 +359,183 @@ Default admin accounts created by `scripts/create_admins.py`:
 
 ## 🧪 Testing
 
+The project includes comprehensive test suites for both backend and frontend to ensure code quality and reliability.
+
 ### Backend Testing
+
+The backend includes unit and integration tests using pytest.
+
+#### Test Structure
+
+```
+backend/tests/
+├── unit/                              # Unit tests
+│   ├── test_example_calculator.py     # Calculator logic tests
+│   ├── test_user_validator.py         # User validation tests
+│   └── test_account_service.py        # Account operations tests
+├── integration/                       # Integration tests
+│   ├── test_api_example.py            # API endpoint tests
+│   └── test_database_operations.py    # Database CRUD tests
+├── conftest.py                        # Shared pytest fixtures
+├── pytest.ini                         # Pytest configuration
+└── README.md                          # Testing documentation
+```
+
+#### Prerequisites
+
+Install testing dependencies:
 
 ```bash
 cd backend
-python -m pytest  # If tests are configured
+pip install pytest pytest-cov flask flask-sqlalchemy
+```
+
+#### Running Backend Tests
+
+```bash
+# Run all tests
+cd backend
+pytest tests/ -v
+
+# Run unit tests only
+pytest tests/unit/
+
+# Run integration tests only
+pytest tests/integration/
+
+# Run specific test file
+pytest tests/unit/test_user_validator.py
+
+# Run with coverage report
+pytest tests/ --cov=tests --cov-report=html
+
+# Run specific test by name
+pytest tests/unit/test_example_calculator.py::TestCalculator::test_add_positive_numbers
+```
+
+#### Test Categories
+
+**Unit Tests:**
+- Calculator operations (addition, subtraction, multiplication, division)
+- User input validation (email, password, phone number)
+- Account service logic (deposit, withdrawal, balance management)
+- Edge case handling and error conditions
+
+**Integration Tests:**
+- API endpoint testing with Flask test client
+- Database operations (CRUD, relationships, constraints)
+- User and account workflow testing
+- Request/response validation
+
+#### Test Markers
+
+Tests can be filtered using markers:
+
+```bash
+# Run only unit tests
+pytest tests/ -m unit
+
+# Run only integration tests
+pytest tests/ -m integration
+
+# Skip slow tests
+pytest tests/ -m "not slow"
+```
+
+#### Coverage Reports
+
+Generate detailed coverage reports:
+
+```bash
+# Generate HTML coverage report
+pytest tests/ --cov=tests --cov-report=html
+
+# View report
+open htmlcov/index.html  # On Mac
+xdg-open htmlcov/index.html  # On Linux
 ```
 
 ### Frontend Testing
 
 ```bash
 cd frontend
+
+# Run all tests
 npm test
+
+# Run tests in watch mode
+npm test -- --watch
+
+# Run tests with coverage
+npm test -- --coverage
+
+# Run specific test file
+npm test -- UpdateProfile.test.js
 ```
+
+### Testing Best Practices
+
+1. **Write Tests First**: Follow TDD (Test-Driven Development) when possible
+2. **Test Coverage**: Aim for >80% code coverage
+3. **Isolated Tests**: Each test should be independent and not rely on others
+4. **Descriptive Names**: Use clear, descriptive test names that explain what is being tested
+5. **Mock External Dependencies**: Use mocks for databases, APIs, and external services
+6. **Test Edge Cases**: Include tests for error conditions and boundary values
+7. **Arrange-Act-Assert**: Structure tests with clear setup, execution, and verification phases
+
+### Continuous Integration
+
+Tests can be integrated into CI/CD pipelines:
+
+```yaml
+# Example GitHub Actions workflow
+name: Run Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11
+      
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+      
+      - name: Run backend tests
+        run: |
+          cd backend
+          pytest tests/ --cov=tests --cov-report=xml
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+      
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm install
+      
+      - name: Run frontend tests
+        run: |
+          cd frontend
+          npm test -- --coverage
+```
+
+### Test Documentation
+
+For detailed information about writing and running tests, see:
+- Backend: `/backend/tests/README.md`
+- Frontend: Built-in React testing documentation
 
 ## 🔒 Security Considerations
 
