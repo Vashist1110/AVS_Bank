@@ -133,11 +133,48 @@ AVS_Bank/
 
 Before you begin, ensure you have the following installed:
 
+### For Local Development
 - **Python 3.8+**
 - **Node.js 14+** and **npm**
 - **Git**
 
+### For Docker Deployment
+- **Docker** (20.10+)
+- **Docker Compose** (1.29+)
+
 ## 🚀 Installation
+
+### Option 1: Docker Installation (Recommended)
+
+The easiest way to run the application is using Docker:
+
+```bash
+# Clone the repository
+git clone https://github.com/vikaskumar168/AVS_Bank.git
+cd AVS_Bank
+
+# Build and start containers
+docker-compose up --build
+
+# To run in detached mode
+docker-compose up -d --build
+```
+
+The application will be available at:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:5000
+
+To stop the containers:
+```bash
+docker-compose down
+```
+
+To view logs:
+```bash
+docker-compose logs -f
+```
+
+### Option 2: Local Installation
 
 ### 1. Clone the Repository
 
@@ -209,7 +246,25 @@ If you need to change the backend URL, update the proxy setting:
 
 ### Starting the Application
 
-#### 1. Start Backend Server
+#### Using Docker (Recommended)
+
+```bash
+# Start all services
+docker-compose up
+
+# Start in background
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop all services
+docker-compose down
+```
+
+#### Using Local Setup
+
+##### 1. Start Backend Server
 
 ```bash
 cd backend
@@ -219,7 +274,7 @@ python run.py
 
 The backend server will start at `http://localhost:5000`
 
-#### 2. Start Frontend Development Server
+##### 2. Start Frontend Development Server
 
 ```bash
 cd frontend
@@ -326,7 +381,79 @@ npm test
 - CORS is configured for API security
 - Input validation on all forms
 
-## 🐛 Troubleshooting
+## � Docker
+
+### Docker Files
+
+The project includes Dockerfiles for both backend and frontend:
+
+- **Backend Dockerfile** (`backend/Dockerfile`): Uses Python 3.11-slim image
+- **Frontend Dockerfile** (`frontend/Dockerfile`): Multi-stage build with Node.js and Nginx
+- **Docker Compose** (`docker-compose.yml`): Orchestrates both services
+
+### Docker Commands
+
+```bash
+# Build images
+docker-compose build
+
+# Start services
+docker-compose up
+
+# Start in detached mode
+docker-compose up -d
+
+# Stop services
+docker-compose down
+
+# View logs
+docker-compose logs -f backend
+docker-compose logs -f frontend
+
+# Rebuild and restart
+docker-compose up --build
+
+# Remove volumes
+docker-compose down -v
+
+# Execute commands in containers
+docker-compose exec backend python scripts/create_admins.py
+docker-compose exec backend flask shell
+```
+
+### Environment Variables
+
+You can create a `.env` file in the root directory to configure environment variables:
+
+```env
+# Backend
+FLASK_ENV=development
+SECRET_KEY=your-secret-key
+JWT_SECRET_KEY=your-jwt-secret
+
+# Frontend
+REACT_APP_API_URL=http://localhost:5000
+```
+
+## �🐛 Troubleshooting
+
+### Docker Issues
+
+**Port already in use:**
+```bash
+# Change ports in docker-compose.yml or stop conflicting services
+docker-compose down
+lsof -ti:5000 | xargs kill -9  # Kill process on port 5000
+lsof -ti:3000 | xargs kill -9  # Kill process on port 3000
+```
+
+**Permission denied errors:**
+```bash
+sudo chmod -R 755 backend/app/uploads
+```
+
+**Database not persisting:**
+Make sure volumes are properly configured in docker-compose.yml
 
 ### Backend Issues
 
