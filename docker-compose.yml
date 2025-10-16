@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: avs_bank_backend
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - FLASK_APP=run.py
+    volumes:
+      - ./backend:/app
+      - backend_data:/app/instance
+    networks:
+      - avs_bank_network
+    restart: unless-stopped
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: avs_bank_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - avs_bank_network
+    restart: unless-stopped
+
+volumes:
+  backend_data:
+
+networks:
+  avs_bank_network:
+    driver: bridge
